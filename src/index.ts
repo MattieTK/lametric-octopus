@@ -51,7 +51,7 @@ app.get('/lametric', async (c) => {
         icon = 49412
       }
 
-      const currentPrice = currentData.value_inc_vat
+      const currentPrice = currentData.value_inc_vat.toFixed(2)
 
       frames.push({
         "text": `${currentPrice}p`,
