@@ -31,7 +31,7 @@ app.get('/lametric', async (c) => {
   }
 
   try {
-    const frames: Array<{ text?: string; goalData?: { start: number; current: number; end: number; unit: string }; icon: number }> = []
+    const frames: Array<{ text?: string; goalData?: { start: number; current: number; end: number; unit: string }; icon: number; duration?: number }> = []
 
     const currentData = await octopusAgilePricing(location)
 
@@ -56,6 +56,7 @@ app.get('/lametric', async (c) => {
       frames.push({
         "text": `${currentPrice}p`,
         "icon": icon,
+        "duration": 5
       })
     } else {
       frames.push({
