@@ -16,8 +16,8 @@ app.get('/lametric', async (c) => {
   c.header('Cache-Control', `max-age=${secondsToNext30}`)
 
   const location = c.req.query('location')
-  const cheapestParam = c.req.query('cheapest') // '1' or '0'
-  const tomorrowParam = c.req.query('tomorrow') // '1' or '0'
+  const cheapestParam = c.req.query('cheapest') // 'true' or 'false'
+  const tomorrowParam = c.req.query('tomorrow') // 'true' or 'false'
 
   if (!location || location.length < 1) {
     return c.json({
@@ -67,7 +67,7 @@ app.get('/lametric', async (c) => {
     }
 
     // Handle cheapest rate display
-    if (cheapestParam === '1') {
+    if (cheapestParam === 'true') {
       // Show cheapest upcoming rate
       const today = new Date()
       const cheapestUpcoming = await getCheapestUpcomingPrice(location, today)
@@ -81,7 +81,7 @@ app.get('/lametric', async (c) => {
     }
 
     // Handle tomorrow's rate display
-    if (tomorrowParam === '1') {
+    if (tomorrowParam === 'true') {
       const now = new Date()
       const currentHour = now.getHours()
 
