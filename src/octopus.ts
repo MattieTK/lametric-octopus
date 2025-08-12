@@ -13,6 +13,23 @@ type OctopusResults = {
   results: OctopusPrice[];
 };
 
+const LOCATION_MAP = {
+  "London": "C",
+  "East Midlands": "B",
+  "Eastern England": "A",
+  "Merseyside & Northern Wales": "D",
+  "North Eastern England": "F",
+  "North Western England": "G",
+  "Northern Scotland": "P",
+  "South Eastern England": "J",
+  "South Western England": "L",
+  "Southern England": "H",
+  "Southern Scotland": "N",
+  "Southern Wales": "K",
+  "West Midlands": "E",
+  "Yorkshire": "M",
+} as const;
+
 async function getAllPricesForPeriod(locationCode: string, periodStart: Date, periodEnd: Date): Promise<OctopusPrice[]> {
   const octopusDataUrl =
     `https://api.octopus.energy/v1/products/AGILE-BB-23-12-06/electricity-tariffs/E-1R-AGILE-BB-23-12-06-${locationCode}/standard-unit-rates/?period_from=${periodStart.toISOString()}&period_to=${periodEnd.toISOString()}`;
@@ -23,24 +40,7 @@ async function getAllPricesForPeriod(locationCode: string, periodStart: Date, pe
 }
 
 export async function octopusAgilePricing(location: string): Promise<OctopusPrice> {
-  const locationMap = {
-    "London": "C",
-    "East Midlands": "B",
-    "Eastern England": "A",
-    "Merseyside & Northern Wales": "D",
-    "North Eastern England": "F",
-    "North Western England": "G",
-    "Northern Scotland": "P",
-    "South Eastern England": "J",
-    "South Western England": "L",
-    "Southern England": "H",
-    "Southern Scotland": "N",
-    "Southern Wales": "K",
-    "West Midlands": "E",
-    "Yorkshire": "M",
-  };
-  
-  const locationCode = locationMap[location as keyof typeof locationMap];
+  const locationCode = LOCATION_MAP[location as keyof typeof LOCATION_MAP];
   const octopusDataUrl =
     `https://api.octopus.energy/v1/products/AGILE-BB-23-12-06/electricity-tariffs/E-1R-AGILE-BB-23-12-06-${locationCode}/standard-unit-rates/`;
   
@@ -67,24 +67,7 @@ export async function octopusAgilePricing(location: string): Promise<OctopusPric
 }
 
 export async function getCheapestPriceForDay(location: string, date: Date): Promise<OctopusPrice | null> {
-  const locationMap = {
-    "London": "C",
-    "East Midlands": "B",
-    "Eastern England": "A",
-    "Merseyside & Northern Wales": "D",
-    "North Eastern England": "F",
-    "North Western England": "G",
-    "Northern Scotland": "P",
-    "South Eastern England": "J",
-    "South Western England": "L",
-    "Southern England": "H",
-    "Southern Scotland": "N",
-    "Southern Wales": "K",
-    "West Midlands": "E",
-    "Yorkshire": "M",
-  };
-  
-  const locationCode = locationMap[location as keyof typeof locationMap];
+  const locationCode = LOCATION_MAP[location as keyof typeof LOCATION_MAP];
   
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
@@ -109,24 +92,7 @@ export async function getCheapestPriceForDay(location: string, date: Date): Prom
 }
 
 export async function getFreeElectricityPeriodsForDay(location: string, date: Date): Promise<OctopusPrice[]> {
-  const locationMap = {
-    "London": "C",
-    "East Midlands": "B",
-    "Eastern England": "A",
-    "Merseyside & Northern Wales": "D",
-    "North Eastern England": "F",
-    "North Western England": "G",
-    "Northern Scotland": "P",
-    "South Eastern England": "J",
-    "South Western England": "L",
-    "Southern England": "H",
-    "Southern Scotland": "N",
-    "Southern Wales": "K",
-    "West Midlands": "E",
-    "Yorkshire": "M",
-  };
-  
-  const locationCode = locationMap[location as keyof typeof locationMap];
+  const locationCode = LOCATION_MAP[location as keyof typeof LOCATION_MAP];
   
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
@@ -146,24 +112,7 @@ export async function getFreeElectricityPeriodsForDay(location: string, date: Da
 }
 
 export async function getCheapestUpcomingPrice(location: string, date: Date): Promise<OctopusPrice | null> {
-  const locationMap = {
-    "London": "C",
-    "East Midlands": "B",
-    "Eastern England": "A",
-    "Merseyside & Northern Wales": "D",
-    "North Eastern England": "F",
-    "North Western England": "G",
-    "Northern Scotland": "P",
-    "South Eastern England": "J",
-    "South Western England": "L",
-    "Southern England": "H",
-    "Southern Scotland": "N",
-    "Southern Wales": "K",
-    "West Midlands": "E",
-    "Yorkshire": "M",
-  };
-  
-  const locationCode = locationMap[location as keyof typeof locationMap];
+  const locationCode = LOCATION_MAP[location as keyof typeof LOCATION_MAP];
   
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
@@ -200,24 +149,7 @@ export async function getCheapestUpcomingPrice(location: string, date: Date): Pr
 }
 
 export async function getMostExpensivePriceForDay(location: string, date: Date): Promise<OctopusPrice | null> {
-  const locationMap = {
-    "London": "C",
-    "East Midlands": "B",
-    "Eastern England": "A",
-    "Merseyside & Northern Wales": "D",
-    "North Eastern England": "F",
-    "North Western England": "G",
-    "Northern Scotland": "P",
-    "South Eastern England": "J",
-    "South Western England": "L",
-    "Southern England": "H",
-    "Southern Scotland": "N",
-    "Southern Wales": "K",
-    "West Midlands": "E",
-    "Yorkshire": "M",
-  };
-  
-  const locationCode = locationMap[location as keyof typeof locationMap];
+  const locationCode = LOCATION_MAP[location as keyof typeof LOCATION_MAP];
   
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);

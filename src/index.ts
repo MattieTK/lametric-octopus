@@ -52,9 +52,7 @@ app.get('/lametric', async (c) => {
       }
 
       // Convert prices to whole numbers (multiply by 100 to avoid decimals)
-      const currentPrice = Math.round(currentData.value_inc_vat)
-      const lowestPrice = cheapestToday ? Math.round(cheapestToday.value_inc_vat) : currentPrice
-      const highestPrice = mostExpensiveToday ? Math.round(mostExpensiveToday.value_inc_vat) : currentPrice
+      const currentPrice = currentData.value_inc_vat
 
       frames.push({
         "text": `${currentPrice}p`,
