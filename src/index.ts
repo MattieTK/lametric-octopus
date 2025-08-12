@@ -31,7 +31,7 @@ app.get('/lametric', async (c) => {
   }
 
   try {
-    const frames: Array<{ text: string; icon: number }> = []
+    const frames: Array<{ text?: string; goalData?: { start: number; current: number; end: number; unit: string }; icon: number }> = []
 
     const currentData = await octopusAgilePricing(location)
 
@@ -51,8 +51,18 @@ app.get('/lametric', async (c) => {
         icon = 49412
       }
 
+      // Convert prices to whole numbers (multiply by 100 to avoid decimals)
+      const currentPrice = Math.round(currentData.value_inc_vat * 100)
+      const lowestPrice = cheapestToday ? Math.round(cheapestToday.value_inc_vat * 100) : currentPrice
+      const highestPrice = mostExpensiveToday ? Math.round(mostExpensiveToday.value_inc_vat * 100) : currentPrice
+
       frames.push({
-        "text": `${currentData.value_inc_vat.toFixed(2).toString()}p`,
+        "goalData": {
+          "start": lowestPrice,
+          "current": currentPrice,
+          "end": highestPrice,
+          "unit": "p"
+        },
         "icon": icon,
       })
     } else {
@@ -100,8 +110,14 @@ app.get('/lametric', async (c) => {
 
     // If no frames were added at all (empty result), show current price as fallback
     if (frames.length === 0) {
+      const currentPrice = Math.round(currentData.value_inc_vat * 100)
       frames.push({
-        "text": `${currentData.value_inc_vat.toFixed(2).toString()}p`,
+        "goalData": {
+          "start": currentPrice,
+          "current": currentPrice,
+          "end": currentPrice,
+          "unit": "p"
+        },
         "icon": 58195,
       })
     }
