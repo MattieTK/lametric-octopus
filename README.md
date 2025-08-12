@@ -11,6 +11,7 @@ This service fetches real-time electricity pricing data from the Octopus Energy 
 - **Current Pricing**: Shows the current electricity rate in pence per kWh
 - **Cheapest Rate Today**: Displays the cheapest rate and time for the current day
 - **Tomorrow's Preview**: Shows tomorrow's cheapest rate (available after 4 PM)
+- **Free Electricity Alerts**: Notifies when electricity is free or you're paid to use it
 - **Smart Caching**: Automatically caches responses until the next 30-minute pricing period
 
 ## API Endpoints
@@ -21,12 +22,19 @@ Returns pricing data formatted for LaMetric TIME devices.
 
 **Query Parameters:**
 - `location` (required): UK region name
-- `cheapest` (optional): Set to `true` to include today's cheapest rate
-- `tomorrow` (optional): Set to `true` to include tomorrow's cheapest rate (after 4 PM)
+- `cheapest` (optional): `true` to show today's cheapest rate, `only_free` to show only if electricity is free/negative
+- `tomorrow` (optional): `true` to show tomorrow's cheapest rate (after 4 PM), `only_free` to show only if electricity is free/negative
 
-**Example:**
+**Examples:**
 ```
+# Basic usage
 /lametric?location=London&cheapest=true&tomorrow=true
+
+# Show cheapest rates, but only display tomorrow if it's free
+/lametric?location=London&cheapest=true&tomorrow=only_free
+
+# Show only when electricity is free/negative (today and tomorrow)
+/lametric?location=London&cheapest=only_free&tomorrow=only_free
 ```
 
 ## Development
