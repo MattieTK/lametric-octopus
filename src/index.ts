@@ -56,7 +56,7 @@ app.get('/lametric', async (c) => {
       frames.push({
         "text": `${currentPrice}p`,
         "icon": icon,
-        "duration": 5
+        "duration": 10
       })
     } else {
       frames.push({
