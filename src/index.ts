@@ -110,14 +110,8 @@ app.get('/lametric', async (c) => {
 
     // If no frames were added at all (empty result), show current price as fallback
     if (frames.length === 0) {
-      const currentPrice = Math.round(currentData.value_inc_vat * 100)
       frames.push({
-        "goalData": {
-          "start": currentPrice,
-          "current": currentPrice,
-          "end": currentPrice,
-          "unit": "p"
-        },
+        "text": `${currentData.value_inc_vat.toFixed(2).toString()}p`,
         "icon": 58195,
       })
     }
