@@ -51,7 +51,6 @@ app.get('/lametric', async (c) => {
         icon = 49412
       }
 
-      // Convert prices to whole numbers (multiply by 100 to avoid decimals)
       const currentPrice = currentData.value_inc_vat
 
       frames.push({
