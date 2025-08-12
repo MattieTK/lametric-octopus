@@ -57,12 +57,7 @@ app.get('/lametric', async (c) => {
       const highestPrice = mostExpensiveToday ? Math.round(mostExpensiveToday.value_inc_vat) : currentPrice
 
       frames.push({
-        "goalData": {
-          "start": lowestPrice,
-          "current": currentPrice,
-          "end": highestPrice,
-          "unit": "p"
-        },
+        "text": `${currentPrice}p`,
         "icon": icon,
       })
     } else {
