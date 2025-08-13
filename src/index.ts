@@ -17,6 +17,16 @@ app.get('/lametric', cache({
   const minutesToNext30 = minutes < 30 ? 30 - minutes : 60 - minutes
   const secondsToNext30 = (minutesToNext30 * 60) - now.getSeconds()
 
+  // Calculate current 30-minute period for cache key
+  const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
+  
+  // Calculate absolute expiration time for current period
+  const nextPeriodStart = (currentPeriod + 1) * 30 * 60 * 1000
+  const expiresTime = new Date(nextPeriodStart)
+  
+  // Set period header for cache variation
+  c.header('X-Period', currentPeriod.toString())
+
   const location = c.req.query('location')
   const cheapestParam = c.req.query('cheapest')
   const tomorrowParam = c.req.query('tomorrow')
@@ -112,7 +122,7 @@ app.get('/lametric', cache({
     }
 
     // Set cache headers aligned with electricity pricing periods
-    c.header('Cache-Control', `public, max-age=${secondsToNext30}`)
+    c.header('Cache-Control', 'public')
     c.header('Expires', expiresTime.toUTCString())
     
     return c.json({ frames })
