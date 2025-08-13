@@ -10,6 +10,7 @@ app.get('/', (c) => {
 
 app.get('/lametric', cache({
   cacheName: 'lametric-cache',
+  cacheControl: 'public',
   vary: ['X-Period', 'location', 'cheapest', 'tomorrow']
 }), async (c) => {
   const now = new Date()
