@@ -15,6 +15,10 @@ app.get('/lametric', async (c) => {
 
   // Create cache key based on query parameters and current 30-minute period
   const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
+  
+  // Calculate absolute expiration time for current period
+  const nextPeriodStart = (currentPeriod + 1) * 30 * 60 * 1000
+  const expiresTime = new Date(nextPeriodStart)
   const location = c.req.query('location')
   const cheapestParam = c.req.query('cheapest') // 'true' or 'false'
   const tomorrowParam = c.req.query('tomorrow') // 'true' or 'false'
@@ -123,7 +127,8 @@ app.get('/lametric', async (c) => {
     }
 
     // Set cache headers before returning
-    c.header('Cache-Control', `max-age=${secondsToNext30}`)
+    c.header('Cache-Control', 'public')
+    c.header('Expires', expiresTime.toUTCString())
     c.header('X-Cache', 'MISS')
     
     const response = c.json({ frames })
@@ -133,7 +138,8 @@ app.get('/lametric', async (c) => {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': `max-age=${secondsToNext30}`,
+        'Cache-Control': 'public',
+        'Expires': expiresTime.toUTCString(),
         'X-Cache': 'MISS'
       }
     })
