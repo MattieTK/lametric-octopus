@@ -13,11 +13,27 @@ app.get('/lametric', async (c) => {
   const minutesToNext30 = minutes < 30 ? 30 - minutes : 60 - minutes
   const secondsToNext30 = (minutesToNext30 * 60) - now.getSeconds()
 
-  c.header('Cache-Control', `max-age=${secondsToNext30}`)
-
+  // Create cache key based on query parameters and current 30-minute period
+  const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
   const location = c.req.query('location')
   const cheapestParam = c.req.query('cheapest') // 'true' or 'false'
   const tomorrowParam = c.req.query('tomorrow') // 'true' or 'false'
+  
+  const cacheKey = `lametric-${location}-${cheapestParam || 'false'}-${tomorrowParam || 'false'}-${currentPeriod}`
+  
+  // Try to get from cache first
+  const cache = caches.default
+  const cacheRequest = new Request(`https://lametric.cache/${cacheKey}`)
+  
+  let cachedResponse = await cache.match(cacheRequest)
+  if (cachedResponse) {
+    const response = new Response(cachedResponse.body, {
+      status: cachedResponse.status,
+      headers: cachedResponse.headers
+    })
+    response.headers.set('X-Cache', 'HIT')
+    return response
+  }
 
   if (!location || location.length < 1) {
     return c.json({
@@ -109,7 +125,25 @@ app.get('/lametric', async (c) => {
       })
     }
 
-    return c.json({ frames })
+    // Set cache headers before returning
+    c.header('Cache-Control', `max-age=${secondsToNext30}`)
+    c.header('X-Cache', 'MISS')
+    
+    const response = c.json({ frames })
+    
+    // Store in cache with proper headers
+    const responseToCache = new Response(JSON.stringify({ frames }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': `max-age=${secondsToNext30}`,
+        'X-Cache': 'MISS'
+      }
+    })
+    
+    await cache.put(cacheRequest, responseToCache.clone())
+    
+    return response
 
   } catch (error) {
     console.log("Error:", error)
