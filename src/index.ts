@@ -27,10 +27,7 @@ app.get('/lametric', async (c) => {
   
   let cachedResponse = await cache.match(cacheRequest)
   if (cachedResponse) {
-    const response = new Response(cachedResponse.body, {
-      status: cachedResponse.status,
-      headers: cachedResponse.headers
-    })
+    const response = cachedResponse.clone()
     response.headers.set('X-Cache', 'HIT')
     return response
   }
