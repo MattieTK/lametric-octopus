@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { cache } from 'hono/cache'
 import { octopusAgilePricing, getCheapestPriceForDay, getFreeElectricityPeriodsForDay, getCheapestUpcomingPrice, getMostExpensivePriceForDay } from './octopus'
 
 const app = new Hono()
@@ -7,34 +8,18 @@ app.get('/', (c) => {
   return c.text('Hello Cloudflare Workers!')
 })
 
-app.get('/lametric', async (c) => {
+app.get('/lametric', cache({
+  cacheName: 'lametric-cache',
+  vary: ['X-Period', 'location', 'cheapest', 'tomorrow']
+}), async (c) => {
   const now = new Date()
   const minutes = now.getMinutes()
   const minutesToNext30 = minutes < 30 ? 30 - minutes : 60 - minutes
   const secondsToNext30 = (minutesToNext30 * 60) - now.getSeconds()
 
-  // Create cache key based on query parameters and current 30-minute period
-  const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
-  
-  // Calculate absolute expiration time for current period
-  const nextPeriodStart = (currentPeriod + 1) * 30 * 60 * 1000
-  const expiresTime = new Date(nextPeriodStart)
   const location = c.req.query('location')
-  const cheapestParam = c.req.query('cheapest') // 'true' or 'false'
-  const tomorrowParam = c.req.query('tomorrow') // 'true' or 'false'
-  
-  const cacheKey = `lametric-${location}-${cheapestParam || 'false'}-${tomorrowParam || 'false'}-${currentPeriod}`
-  
-  // Try to get from cache first
-  const cache = caches.default
-  const cacheRequest = new Request(`https://lametric.cache/${cacheKey}`)
-  
-  let cachedResponse = await cache.match(cacheRequest)
-  if (cachedResponse) {
-    const response = cachedResponse.clone()
-    response.headers.set('X-Cache', 'HIT')
-    return response
-  }
+  const cheapestParam = c.req.query('cheapest')
+  const tomorrowParam = c.req.query('tomorrow')
 
   if (!location || location.length < 1) {
     return c.json({
@@ -126,27 +111,11 @@ app.get('/lametric', async (c) => {
       })
     }
 
-    // Set cache headers before returning
-    c.header('Cache-Control', 'public')
+    // Set cache headers aligned with electricity pricing periods
+    c.header('Cache-Control', `public, max-age=${secondsToNext30}`)
     c.header('Expires', expiresTime.toUTCString())
-    c.header('X-Cache', 'MISS')
     
-    const response = c.json({ frames })
-    
-    // Store in cache with proper headers
-    const responseToCache = new Response(JSON.stringify({ frames }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public',
-        'Expires': expiresTime.toUTCString(),
-        'X-Cache': 'MISS'
-      }
-    })
-    
-    await cache.put(cacheRequest, responseToCache.clone())
-    
-    return response
+    return c.json({ frames })
 
   } catch (error) {
     console.log("Error:", error)
