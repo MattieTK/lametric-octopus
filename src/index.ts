@@ -85,7 +85,7 @@ app.get('/lametric', cache({
       const today = new Date()
       const cheapestUpcoming = await getCheapestUpcomingPrice(location, today)
       if (cheapestUpcoming) {
-        const timeString = new Date(cheapestUpcoming.valid_from).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        const timeString = new Date(cheapestUpcoming.valid_from).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
         frames.push({
           "text": `${cheapestUpcoming.value_inc_vat.toFixed(2)}p at ${timeString}`,
           "icon": 58195,
