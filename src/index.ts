@@ -567,7 +567,15 @@ app.get('/lametric', cache({
     return c.json({ frames })
 
   } catch (error) {
-    console.log("Error:", error)
+    console.error("Error in /lametric endpoint:", {
+      endpoint: '/lametric',
+      location,
+      cheapestParam,
+      tomorrowParam,
+      currentPeriod,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return c.json({
       "frames": [
         {
