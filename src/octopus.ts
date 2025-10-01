@@ -32,7 +32,7 @@ const LOCATION_MAP = {
 
 async function getAllPricesForPeriod(locationCode: string, periodStart: Date, periodEnd: Date): Promise<OctopusPrice[]> {
   const octopusDataUrl =
-    `https://api.octopus.energy/v1/products/AGILE-BB-23-12-06/electricity-tariffs/E-1R-AGILE-BB-23-12-06-${locationCode}/standard-unit-rates/?period_from=${periodStart.toISOString()}&period_to=${periodEnd.toISOString()}`;
+    `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${locationCode}/standard-unit-rates/?period_from=${periodStart.toISOString()}&period_to=${periodEnd.toISOString()}`;
 
   try {
     const data = await fetch(octopusDataUrl);
@@ -78,7 +78,7 @@ export async function octopusAgilePricing(location: string): Promise<OctopusPric
   }
 
   const octopusDataUrl =
-    `https://api.octopus.energy/v1/products/AGILE-BB-23-12-06/electricity-tariffs/E-1R-AGILE-BB-23-12-06-${locationCode}/standard-unit-rates/`;
+    `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${locationCode}/standard-unit-rates/`;
 
   try {
     const data = await fetch(octopusDataUrl);
@@ -129,8 +129,8 @@ export async function octopusAgilePricing(location: string): Promise<OctopusPric
         throw new Error(`Octopus API next page returned ${nextData.status}: ${nextData.statusText}`);
       }
 
-      let { results: results } = await nextData.json() as OctopusResults;
-      const nextNow = results.filter((data) =>
+      let { results: nextResults } = await nextData.json() as OctopusResults;
+      const nextNow = nextResults.filter((data) =>
         Date.parse(data.valid_from) < Date.now()
         && Date.parse(data.valid_to) > Date.now()
       );
@@ -140,9 +140,9 @@ export async function octopusAgilePricing(location: string): Promise<OctopusPric
           function: 'octopusAgilePricing',
           location,
           locationCode,
-          nextPageResultsCount: results.length,
-          firstValidFrom: results[0]?.valid_from,
-          lastValidTo: results[results.length - 1]?.valid_to
+          nextPageResultsCount: nextResults.length,
+          firstValidFrom: nextResults[0]?.valid_from,
+          lastValidTo: nextResults[nextResults.length - 1]?.valid_to
         });
         throw new Error('No current price found');
       }
