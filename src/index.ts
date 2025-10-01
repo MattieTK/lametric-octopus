@@ -5,7 +5,7 @@ import { octopusAgilePricing, getCheapestPriceForDay, getFreeElectricityPeriodsF
 const app = new Hono()
 
 app.get('/', (c) => {
-  return c.html(`
+    return c.html(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -450,182 +450,182 @@ app.get('/', (c) => {
 })
 
 app.get('/lametric', cache({
-  cacheName: 'lametric-cache',
-  cacheControl: 'public',
-  vary: ['X-Period', 'location', 'cheapest', 'tomorrow']
+    cacheName: 'lametric-cache',
+    cacheControl: 'public',
+    vary: ['X-Period', 'location', 'cheapest', 'tomorrow']
 }), async (c) => {
-  const now = new Date()
+    const now = new Date()
 
-  // Calculate current 30-minute period for cache key
-  const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
+    // Calculate current 30-minute period for cache key
+    const currentPeriod = Math.floor(now.getTime() / (30 * 60 * 1000))
 
-  // Calculate absolute expiration time for current period
-  const nextPeriodStart = (currentPeriod + 1) * 30 * 60 * 1000
-  const expiresTime = new Date(nextPeriodStart)
+    // Calculate absolute expiration time for current period
+    const nextPeriodStart = (currentPeriod + 1) * 30 * 60 * 1000
+    const expiresTime = new Date(nextPeriodStart)
 
-  // Set period header for cache variation
-  c.header('X-Period', currentPeriod.toString())
+    // Set period header for cache variation
+    c.header('X-Period', currentPeriod.toString())
 
-  const location = c.req.query('location')
-  const cheapestParam = c.req.query('cheapest')
-  const tomorrowParam = c.req.query('tomorrow')
+    const location = c.req.query('location')
+    const cheapestParam = c.req.query('cheapest')
+    const tomorrowParam = c.req.query('tomorrow')
 
-  if (!location || location.length < 1) {
-    return c.json({
-      "frames": [
-        {
-          "text": `Set location in app`,
-          "icon": 95,
-        },
-      ],
-    })
-  }
-
-  try {
-    const frames: Array<{ text?: string; goalData?: { start: number; current: number; end: number; unit: string }; icon: number; duration?: number }> = []
-
-    const currentData = await octopusAgilePricing(location)
-
-    if (currentData?.value_inc_vat !== undefined) {
-      // Determine icon based on whether current price is cheapest, most expensive, or other
-      const today = new Date()
-      const [cheapestToday, mostExpensiveToday] = await Promise.all([
-        getCheapestPriceForDay(location, today),
-        getMostExpensivePriceForDay(location, today)
-      ])
-
-      let icon = 58195 // Default icon for other hours
-
-      if (cheapestToday && currentData.value_inc_vat === cheapestToday.value_inc_vat) {
-        icon = 49411
-      } else if (mostExpensiveToday && currentData.value_inc_vat === mostExpensiveToday.value_inc_vat) {
-        icon = 49412
-      }
-
-      const currentPrice = currentData.value_inc_vat.toFixed(2)
-
-      frames.push({
-        "text": `${currentPrice}p`,
-        "icon": icon,
-        "duration": 10
-      })
-    } else {
-      frames.push({
-        "text": `error`,
-        "icon": 58195,
-      })
-      return c.json({ frames })
-    }
-
-    // Handle cheapest rate display
-    if (cheapestParam === 'true') {
-      // Show cheapest upcoming rate
-      const today = new Date()
-      const cheapestUpcoming = await getCheapestUpcomingPrice(location, today)
-      if (cheapestUpcoming) {
-        const timeString = new Date(cheapestUpcoming.valid_from).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
-        frames.push({
-          "text": `${cheapestUpcoming.value_inc_vat.toFixed(2)}p at ${timeString}`,
-          "icon": 58195,
+    if (!location || location.length < 1) {
+        return c.json({
+            "frames": [
+                {
+                    "text": `Set location in app`,
+                    "icon": 95,
+                },
+            ],
         })
-      }
     }
 
-    // Handle tomorrow's rate display
-    if (tomorrowParam === 'true') {
-      const now = new Date()
-      const currentHour = now.getHours()
+    try {
+        const frames: Array<{ text?: string; goalData?: { start: number; current: number; end: number; unit: string }; icon: number; duration?: number }> = []
 
-      if (currentHour >= 16) {
-        const tomorrow = new Date()
-        tomorrow.setDate(tomorrow.getDate() + 1)
+        const currentData = await octopusAgilePricing(location)
 
-        // Show regular cheapest rate for tomorrow
-        const cheapestTomorrow = await getCheapestPriceForDay(location, tomorrow)
-        if (cheapestTomorrow) {
-          frames.push({
-            "text": `Cheapest tomorrow: ${cheapestTomorrow.value_inc_vat.toFixed(2)}p`,
-            "icon": 52619,
-          })
+        if (currentData?.value_inc_vat !== undefined) {
+            // Determine icon based on whether current price is cheapest, most expensive, or other
+            const today = new Date()
+            const [cheapestToday, mostExpensiveToday] = await Promise.all([
+                getCheapestPriceForDay(location, today),
+                getMostExpensivePriceForDay(location, today)
+            ])
+
+            let icon = 58195 // Default icon for other hours
+
+            if (cheapestToday && currentData.value_inc_vat === cheapestToday.value_inc_vat) {
+                icon = 49411
+            } else if (mostExpensiveToday && currentData.value_inc_vat === mostExpensiveToday.value_inc_vat) {
+                icon = 49412
+            }
+
+            const currentPrice = currentData.value_inc_vat.toFixed(2)
+
+            frames.push({
+                "text": `${currentPrice}p`,
+                "icon": icon,
+                "duration": 10
+            })
+        } else {
+            frames.push({
+                "text": `error`,
+                "icon": 58195,
+            })
+            return c.json({ frames })
         }
-      }
+
+        // Handle cheapest rate display
+        if (cheapestParam === 'true') {
+            // Show cheapest upcoming rate
+            const today = new Date()
+            const cheapestUpcoming = await getCheapestUpcomingPrice(location, today)
+            if (cheapestUpcoming) {
+                const timeString = new Date(cheapestUpcoming.valid_from).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
+                frames.push({
+                    "text": `${cheapestUpcoming.value_inc_vat.toFixed(2)}p at ${timeString}`,
+                    "icon": 58195,
+                })
+            }
+        }
+
+        // Handle tomorrow's rate display
+        if (tomorrowParam === 'true') {
+            const now = new Date()
+            const currentHour = now.getHours()
+
+            if (currentHour >= 16) {
+                const tomorrow = new Date()
+                tomorrow.setDate(tomorrow.getDate() + 1)
+
+                // Show regular cheapest rate for tomorrow
+                const cheapestTomorrow = await getCheapestPriceForDay(location, tomorrow)
+                if (cheapestTomorrow) {
+                    frames.push({
+                        "text": `Cheapest tomorrow: ${cheapestTomorrow.value_inc_vat.toFixed(2)}p`,
+                        "icon": 52619,
+                    })
+                }
+            }
+        }
+
+
+        // If no frames were added at all (empty result), show current price as fallback
+        if (frames.length === 0) {
+            frames.push({
+                "text": `${currentData.value_inc_vat.toFixed(2).toString()}p`,
+                "icon": 58195,
+            })
+        }
+
+        // Set cache headers aligned with electricity pricing periods
+        c.header('Cache-Control', 'public')
+        c.header('Expires', expiresTime.toUTCString())
+
+        return c.json({ frames })
+
+    } catch (error) {
+        console.error("Error in /lametric endpoint:", {
+            endpoint: '/lametric',
+            location,
+            cheapestParam,
+            tomorrowParam,
+            currentPeriod,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+        })
+        return c.json({
+            "frames": [
+                {
+                    "text": `error`,
+                    "icon": 58195,
+                },
+            ],
+        }, 500)
     }
-
-
-    // If no frames were added at all (empty result), show current price as fallback
-    if (frames.length === 0) {
-      frames.push({
-        "text": `${currentData.value_inc_vat.toFixed(2).toString()}p`,
-        "icon": 58195,
-      })
-    }
-
-    // Set cache headers aligned with electricity pricing periods
-    c.header('Cache-Control', 'public')
-    c.header('Expires', expiresTime.toUTCString())
-
-    return c.json({ frames })
-
-  } catch (error) {
-    console.error("Error in /lametric endpoint:", {
-      endpoint: '/lametric',
-      location,
-      cheapestParam,
-      tomorrowParam,
-      currentPeriod,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
-    })
-    return c.json({
-      "frames": [
-        {
-          "text": `error`,
-          "icon": 58195,
-        },
-      ],
-    })
-  }
 })
 
 // Generate 8x8 lightning bolt PNG as base64
 function generateLightningBoltIcon(): string {
-  // Using a yellow lightning bolt icon in 8x8 PNG format
-  return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAPklEQVQYlV2NQQ4AIAgDK/7/Ze2JGDAemhQKbWEtIiAAAFprrdZa11prvffee++9915rrbXWWmuttdZa67oOzgMf3CdKV5kHjAAAAABJRU5ErkJggg=="
+    // Using a yellow lightning bolt icon in 8x8 PNG format
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAPklEQVQYlV2NQQ4AIAgDK/7/Ze2JGDAemhQKbWEtIiAAAFprrdZa11prvffee++9915rrbXWWmuttdZa67oOzgMf3CdKV5kHjAAAAABJRU5ErkJggg=="
 }
 
 // Demo endpoint that displays pixel grid with lightning bolt
 app.get('/demo', async (c) => {
-  const lightningIcon = generateLightningBoltIcon()
+    const lightningIcon = generateLightningBoltIcon()
 
-  return c.json({
-    "frames": [
-      {
-        "text": "PIXEL GRID DEMO",
-        "icon": lightningIcon,
-        "duration": 8000
-      },
-      {
-        "text": "37x8 DISPLAY",
-        "icon": lightningIcon,
-        "duration": 4000
-      },
-      {
-        "text": "8x8 LIGHTNING",
-        "icon": lightningIcon,
-        "duration": 4000
-      },
-      {
-        "text": "LEFT: 8x8 COLOR",
-        "icon": lightningIcon,
-        "duration": 4000
-      },
-      {
-        "text": "RIGHT: 29x8 TEXT",
-        "icon": lightningIcon,
-        "duration": 4000
-      }
-    ]
-  })
+    return c.json({
+        "frames": [
+            {
+                "text": "PIXEL GRID DEMO",
+                "icon": lightningIcon,
+                "duration": 8000
+            },
+            {
+                "text": "37x8 DISPLAY",
+                "icon": lightningIcon,
+                "duration": 4000
+            },
+            {
+                "text": "8x8 LIGHTNING",
+                "icon": lightningIcon,
+                "duration": 4000
+            },
+            {
+                "text": "LEFT: 8x8 COLOR",
+                "icon": lightningIcon,
+                "duration": 4000
+            },
+            {
+                "text": "RIGHT: 29x8 TEXT",
+                "icon": lightningIcon,
+                "duration": 4000
+            }
+        ]
+    })
 })
 
 export default app
